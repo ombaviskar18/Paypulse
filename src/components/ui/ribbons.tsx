@@ -59,14 +59,16 @@ const Ribbons = ({
         container.appendChild(gl.canvas);
 
         const scene = new Transform();
-        const lines: Array<{
+        type RibbonLine = {
             spring: number;
             friction: number;
             mouseVelocity: Vec3;
             mouseOffset: Vec3;
             points: Vec3[];
             polyline: Polyline;
-        }> = [];
+        };
+
+        const lines: RibbonLine[] = [];
 
         const vertex = `
             precision highp float;
@@ -129,6 +131,7 @@ const Ribbons = ({
         `;
 
         function resize() {
+            if (!container) return;
             const width = container.clientWidth;
             const height = container.clientHeight;
             renderer.setSize(width, height);
@@ -147,13 +150,6 @@ const Ribbons = ({
                 0
             );
 
-            const line = {
-                spring,
-                friction,
-                mouseVelocity: new Vec3(),
-                mouseOffset,
-            };
-
             const points: Vec3[] = [];
             const startX = (Math.random() - 0.5) * 1.5;
             const startY = (Math.random() - 0.5) * 1.5;
@@ -163,7 +159,15 @@ const Ribbons = ({
                 point.y += (Math.random() - 0.5) * 0.2;
                 points.push(point);
             }
-            line.points = points;
+
+            const line: RibbonLine = {
+                spring,
+                friction,
+                mouseVelocity: new Vec3(),
+                mouseOffset,
+                points,
+                polyline: null as unknown as Polyline,
+            };
 
             line.polyline = new Polyline(gl, {
                 points,
@@ -188,6 +192,7 @@ const Ribbons = ({
 
         const mouse = new Vec3();
         function updateMouse(e: MouseEvent | TouchEvent) {
+            if (!container) return;
             let x: number;
             let y: number;
             const rect = container.getBoundingClientRect();
@@ -250,9 +255,15 @@ const Ribbons = ({
 
         return () => {
             window.removeEventListener('resize', resize);
-            (useWindowEvents ? window : container).removeEventListener('mousemove', updateMouse);
-            (useWindowEvents ? window : container).removeEventListener('touchstart', updateMouse);
-            (useWindowEvents ? window : container).removeEventListener('touchmove', updateMouse);
+            if (useWindowEvents) {
+                window.removeEventListener('mousemove', updateMouse);
+                window.removeEventListener('touchstart', updateMouse);
+                window.removeEventListener('touchmove', updateMouse);
+            } else if (container) {
+                container.removeEventListener('mousemove', updateMouse);
+                container.removeEventListener('touchstart', updateMouse);
+                container.removeEventListener('touchmove', updateMouse);
+            }
             cancelAnimationFrame(frameId);
             if (gl.canvas && gl.canvas.parentNode === container) {
                 container.removeChild(gl.canvas);
