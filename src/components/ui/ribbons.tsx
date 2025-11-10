@@ -129,6 +129,7 @@ const Ribbons = ({
         `;
 
         function resize() {
+            if (!container) return;
             const width = container.clientWidth;
             const height = container.clientHeight;
             renderer.setSize(width, height);
@@ -147,13 +148,6 @@ const Ribbons = ({
                 0
             );
 
-            const line = {
-                spring,
-                friction,
-                mouseVelocity: new Vec3(),
-                mouseOffset,
-            };
-
             const points: Vec3[] = [];
             const startX = (Math.random() - 0.5) * 1.5;
             const startY = (Math.random() - 0.5) * 1.5;
@@ -163,9 +157,8 @@ const Ribbons = ({
                 point.y += (Math.random() - 0.5) * 0.2;
                 points.push(point);
             }
-            line.points = points;
 
-            line.polyline = new Polyline(gl, {
+            const polyline = new Polyline(gl, {
                 points,
                 vertex,
                 fragment,
@@ -180,21 +173,32 @@ const Ribbons = ({
                 },
             });
 
+            const line = {
+                spring,
+                friction,
+                mouseVelocity: new Vec3(),
+                mouseOffset,
+                points,
+                polyline,
+            };
+
             line.polyline.mesh.setParent(scene);
-            lines.push(line as typeof lines[number]);
+            lines.push(line);
         });
 
         resize();
 
         const mouse = new Vec3();
-        function updateMouse(e: MouseEvent | TouchEvent) {
+        function updateMouse(e: Event) {
+            if (!container) return;
             let x: number;
             let y: number;
             const rect = container.getBoundingClientRect();
 
-            if ('changedTouches' in e && e.changedTouches.length) {
-                x = e.changedTouches[0].clientX - rect.left;
-                y = e.changedTouches[0].clientY - rect.top;
+            if ('changedTouches' in e && (e as TouchEvent).changedTouches.length) {
+                const touchEvent = e as TouchEvent;
+                x = touchEvent.changedTouches[0].clientX - rect.left;
+                y = touchEvent.changedTouches[0].clientY - rect.top;
             } else {
                 const event = e as MouseEvent;
                 x = event.clientX - rect.left;
@@ -271,6 +275,7 @@ const Ribbons = ({
         enableShaderEffect,
         effectAmplitude,
         backgroundColor,
+        useWindowEvents,
     ]);
 
     return <div ref={containerRef} className="ribbons-container" />;

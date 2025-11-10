@@ -24,6 +24,7 @@ export default function ProgressSlider({ items }: { items: Item[] }) {
         return () => {
             cancelAnimationFrame(frame.current)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [active])
 
     const animate = (now: number) => {
