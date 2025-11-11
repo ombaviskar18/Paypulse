@@ -59,14 +59,14 @@ const Ribbons = ({
         container.appendChild(gl.canvas);
 
         const scene = new Transform();
-        const lines: Array<{
-            spring: number;
-            friction: number;
-            mouseVelocity: Vec3;
-            mouseOffset: Vec3;
-            points: Vec3[];
-            polyline: Polyline;
-        }> = [];
+		const lines: Array<{
+			spring: number;
+			friction: number;
+			mouseVelocity: any;
+			mouseOffset: any;
+			points: any[];
+			polyline: any;
+		}> = [];
 
         const vertex = `
             precision highp float;
@@ -148,7 +148,7 @@ const Ribbons = ({
                 0
             );
 
-            const points: Vec3[] = [];
+			const points: any[] = [];
             const startX = (Math.random() - 0.5) * 1.5;
             const startY = (Math.random() - 0.5) * 1.5;
             for (let i = 0; i < pointCount; i++) {
